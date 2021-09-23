@@ -27,6 +27,7 @@ const
   DefaultThreshold = 128;
   DefaultMaxAngle = 10;
   DefaultSkipAngle = 0.01;
+  SDefaultOutputFile = 'out.png';
 
 type
   TThresholdingMethod = (
@@ -37,15 +38,15 @@ type
   );
 
   TOperationalFlag = (
-    ofCropToInput,
+    ofAutoCrop,
     ofDetectOnly
   );
   TOperationalFlags = set of TOperationalFlag;
 
   TCmdLineOptions = class
   private
-    FInputFileName: string;
-    FOutputFileName: string;
+    FInputFile: string;
+    FOutputFile: string;
     FMaxAngle: Double;
     FSkipAngle: Double;
     FResamplingFilter: TResamplingFilter;
@@ -69,8 +70,8 @@ type
     function ParseCommnadLine: Boolean;
     function OptionsToString: string;
 
-    property InputFileName: string read FInputFileName;
-    property OutputFileName: string read FOutputFileName;
+    property InputFile: string read FInputFile;
+    property OutputFile: string read FOutputFile;
     // Max expected rotation angle - algo then works in range [-MaxAngle, MaxAngle]
     property MaxAngle: Double read FMaxAngle;
     // Skew threshold angle - skip deskewing if detected skew angle is in range (-MinAngle, MinAngle)
@@ -113,18 +114,6 @@ const
   TiffCompressionNames: array[TiffCompressionOptionNone..TiffCompressionOptionGroup4] of string = (
     'none', 'lzw', 'rle', 'deflate', 'jpeg', 'g4'
   );
-  SDefaultOutputFilePrefix = 'deskewed-';
-  SDefaultOutputFileExt = 'png';
-
-function EnsureTrailingPathDelimiter(const DirPath: string): string;
-begin
-  // IncludeTrailing... hapilly adds delimiter also to empty dir path
-  // (e.g. file in current working dir).
-  if DirPath <> '' then
-    Result := IncludeTrailingPathDelimiter(DirPath)
-  else
-    Result := DirPath;
-end;
 
 { TCmdLineOptions }
 
@@ -137,6 +126,7 @@ begin
   FThresholdingMethod := tmOtsu;
   FContentRect := Rect(0, 0, 0, 0); // whole page
   FBackgroundColor := $FF000000;
+  FOutputFile := SDefaultOutputFile;
   FOperationalFlags := [];
   FShowStats := False;
   FShowParams := False;
@@ -149,7 +139,7 @@ end;
 
 function TCmdLineOptions.GetIsValid: Boolean;
 begin
-  Result := (InputFileName <> '') and (MaxAngle > 0) and (SkipAngle >= 0) and
+  Result := (InputFile <> '') and (MaxAngle > 0) and (SkipAngle >= 0) and
     ((ThresholdingMethod in [tmOtsu]) or (ThresholdingMethod = tmExplicit) and (ThresholdLevel > 0));
 end;
 
@@ -218,15 +208,13 @@ var
     ValLower, S: string;
     TempColor: Cardinal;
     Val64: Int64;
-    I, J, ValLength: Integer;
+    I, J: Integer;
   begin
     Result := True;
     ValLower := LowerCase(Value);
 
     if Param = '-o' then
-    begin
-      FOutputFileName := Value
-    end
+      FOutputFile := Value
     else if Param = '-a' then
     begin
       if not TryStrToFloat(Value, FMaxAngle, FFormatSettings) then
@@ -250,16 +238,15 @@ var
     end
     else if Param = '-b' then
     begin
-      ValLength := Length(ValLower);
-      if (ValLength <= 8) and TryStrToInt64('$' + ValLower, Val64) then
+      if TryStrToInt64('$' + ValLower, Val64) then
       begin
         TempColor := Cardinal(Val64 and $FFFFFFFF);
-        if (TempColor <= $FF) and (ValLength <= 2) then
+        if TempColor <= $FF then
         begin
-          // Just one channel given, replicate for all channels + make opaque
+          // Just one channel given, replicate for all channels + opaque
           FBackgroundColor := Color32($FF, Byte(TempColor), Byte(TempColor), Byte(TempColor)).Color;
         end
-        else if (TempColor <= $FFFFFF) and (ValLength <= 6) then
+        else if (TempColor <= $FFFFFF) and (Length(ValLower) <= 6) then
         begin
           // RGB given, set alpha to 255 for background
           FBackgroundColor := $FF000000 or TempColor;
@@ -302,7 +289,7 @@ var
     else if Param = '-g' then
     begin
       if Pos('c', ValLower) > 0 then
-        Include(FOperationalFlags, ofCropToInput);
+        Include(FOperationalFlags, ofAutoCrop);
       if Pos('d', ValLower) > 0 then
         Include(FOperationalFlags, ofDetectOnly);
     end
@@ -395,22 +382,13 @@ begin
       end;
     end
     else
-      FInputFileName := Param;
+      FInputFile := Param;
 
     Inc(I);
   end;
 
-  if FInputFileName = '' then
+  if FInputFile = '' then
     FErrorMessage := 'No input file given';
-
-  if FOutputFileName = '' then
-  begin
-    // No user output file name given => use prefixed input file name as default
-    // (with PNG as file fomat to not introduce any new compression artifacts when
-    // not explicitly asked for ).
-    FOutputFileName := EnsureTrailingPathDelimiter(GetFileDir(FInputFileName)) +
-      SDefaultOutputFilePrefix + ChangeFileExt(GetFileName(FInputFileName), '.' + SDefaultOutputFileExt);
-  end;
 end;
 
 function TCmdLineOptions.OptionsToString: string;
@@ -430,8 +408,8 @@ begin
 
   Result :=
     'Parameters: ' + CmdParams + sLineBreak +
-    '  input file          = ' + InputFileName + sLineBreak +
-    '  output file         = ' + OutputFileName + sLineBreak +
+    '  input file          = ' + InputFile + sLineBreak +
+    '  output file         = ' + OutputFile + sLineBreak +
     '  max angle           = ' + FloatToStr(MaxAngle) + sLineBreak +
     '  background color    = ' + IntToHex(BackgroundColor, 8) + sLineBreak +
     '  resampling filter   = ' + FilterStr + sLineBreak +
@@ -440,8 +418,7 @@ begin
     '  content rect        = ' + Format('%d,%d,%d,%d', [ContentRect.Left, ContentRect.Top, ContentRect.Right, ContentRect.Bottom]) + sLineBreak +
     '  output format       = ' + Iff(ForcedOutputFormat = ifUnknown, 'default', Imaging.GetFormatName(ForcedOutputFormat)) + sLineBreak +
     '  skip angle          = ' + FloatToStr(SkipAngle) + sLineBreak +
-    '  oper flags          = ' + Iff(ofCropToInput in FOperationalFlags, 'crop-to-input ', '')
-                               + Iff(ofDetectOnly in FOperationalFlags, 'detect-only ', '') + sLineBreak +
+    '  oper flags          = ' + Iff(ofAutoCrop in FOperationalFlags, 'auto-crop ', '') + Iff(ofDetectOnly in FOperationalFlags, 'detect-only ', '') + sLineBreak +
     '  show info           = ' + Iff(ShowParams, 'params ', '') + Iff(ShowStats, 'stats ', '') + Iff(ShowTimings, 'timings ', '') + sLineBreak +
     '  output compression  = jpeg:' + CompJpegStr + ' tiff:' + CompTiffStr + sLineBreak;
 end;

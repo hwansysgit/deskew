@@ -49,7 +49,7 @@ const
   // Number of "best" lines we take into account when determining
   // resulting rotation angle (lines with most votes).
   BestLinesCount = 20;
-  // Angle step used in alpha parameter quantization (degrees)
+  // Angle step used in alpha parameter quantization
   AlphaStep = 0.1;
 type
   TLine = record

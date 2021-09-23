@@ -61,7 +61,7 @@ type
     OutputFolder: string;
     OutputFileFormat: TFileFormat;
     BackgroundColor: TColor32;
-    CropToInput: Boolean;
+    AutoCrop: Boolean;
 
     // Advanced options
     ResamplingFilter: TResamplingFilter;
@@ -94,16 +94,7 @@ type
 implementation
 
 uses
-  ImagingUtility, Utils, TypInfo;
-
-// From ImagingTiff.pas
-const
-  TiffCompressionOptionNone        = 0;
-  TiffCompressionOptionLzw         = 1;
-  TiffCompressionOptionPackbitsRle = 2;
-  TiffCompressionOptionDeflate     = 3;
-  TiffCompressionOptionJpeg        = 4;
-  TiffCompressionOptionGroup4      = 5;
+  ImagingUtility, ImagingTiff, Utils, TypInfo;
 
 const
   DefaultBackgroundColor = $FFFFFFFF; // white
@@ -228,7 +219,7 @@ begin
 
   if BackgroundColor <> $FF000000 then
     AParams.AddStrings(['-b', IntToHex(BackgroundColor, 8)]);
-  if CropToInput then
+  if AutoCrop then
     AParams.AddStrings(['-g', 'c']);
 
   // Advanced options
@@ -259,7 +250,7 @@ begin
   OutputFolder := '';
   OutputFileFormat := ffSameAsInput;
   BackgroundColor := DefaultBackgroundColor;
-  CropToInput := False;
+  AutoCrop := False;
 
   ResamplingFilter := rfDefaultLinear;
   MaxAngle := DefaultMaxAngle;
@@ -282,7 +273,7 @@ begin
   Ini.WriteString(IniSectionOptions, 'OutputFolder', OutputFolder);
   Ini.WriteString(IniSectionOptions, 'OutputFileFormat', TEnumUtils<TFileFormat>.EnumToStr(OutputFileFormat));
   Ini.WriteString(IniSectionOptions, 'BackgroundColor', ColorToString(BackgroundColor));
-  Ini.WriteNiceBool(IniSectionOptions, 'CropToInput', CropToInput);
+  Ini.WriteNiceBool(IniSectionOptions, 'AutoCrop', AutoCrop);
 
   Ini.WriteString(IniSectionAdvanced, 'ResamplingFilter', TEnumUtils<TResamplingFilter>.EnumToStr(ResamplingFilter));
   Ini.WriteFloat(IniSectionAdvanced, 'MaxAngle', MaxAngle);
@@ -305,7 +296,7 @@ begin
   OutputFolder := Ini.ReadString(IniSectionOptions, 'OutputFolder', '');
   OutputFileFormat := TEnumUtils<TFileFormat>.StrToEnum(Ini.ReadString(IniSectionOptions, 'OutputFileFormat', ''));
   BackgroundColor := StringToColorDef(Ini.ReadString(IniSectionOptions, 'BackgroundColor', ''), DefaultBackgroundColor);
-  CropToInput := Ini.ReadNiceBool(IniSectionOptions, 'CropToInput', False);
+  AutoCrop := Ini.ReadNiceBool(IniSectionOptions, 'AutoCrop', False);
 
   ResamplingFilter := TEnumUtils<TResamplingFilter>.StrToEnum(Ini.ReadString(IniSectionAdvanced, 'ResamplingFilter', ''));
   MaxAngle := Ini.ReadFloat(IniSectionAdvanced, 'MaxAngle', DefaultMaxAngle);

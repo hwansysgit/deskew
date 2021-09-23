@@ -1,3 +1,25 @@
+C# 에서 호출 방법
+=======================
+.Net FrameWork
+------------------------
+```
+[DllImport("deskew.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+public static extern void Run([MarshalAs(UnmanagedType.LPStr)] string input , [MarshalAs(UnmanagedType.LPStr)] string output);
+```
+
+.Net5(.Net Core)
+------------------------
+```
+[DllImport("deskewDll.dll" , CallingConvention = CallingConvention.StdCall)]
+public static extern void RunDeskew([MarshalAs(UnmanagedType.LPWStr)] string input, [MarshalAs(UnmanagedType.LPWStr)] string output);
+```
+
+빌드 방법
+------------------------
+소스 를 받아서
+Delphi 10.3 으로 프로젝트 파일(deskewDll.dproj) 을 연 후 빌드.
+
+
 Deskew
 =======================
 
@@ -19,7 +41,7 @@ get an image rotated so that the lines are horizontal.
 There are binaries built for these platforms (located in Bin folder):
 Win64 (`deskew.exe`), Win32 (`deskew32.exe`), Linux 64bit (`deskew`), macOS (`deskew-mac`), Linux ARMv7 (`deskew-arm`).
 
-GUI frontend for this CLI tool is available as well (Windows, Linux, and macOS), see [GUI's Readme](Gui/Readme.md).
+GUI frontend for this CLI tool is available as well (Windows, Linux, and macOS).
 
 License: MPL 2.0
 

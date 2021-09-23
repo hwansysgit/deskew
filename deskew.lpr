@@ -8,11 +8,9 @@
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 }
-program deskew;
+library deskew;
 
-{$IFDEF MSWINDOWS}
-  {$APPTYPE CONSOLE}
-{$ENDIF}
+{$mode objfpc} {$H+}
 
 uses
   RotationDetector in 'RotationDetector.pas',
@@ -20,11 +18,20 @@ uses
   ImageUtils in 'ImageUtils.pas',
   MainUnit in 'MainUnit.pas';
 
+function PWToUtf8(const str: PWideChar): string;
 begin
-{$IFDEF DEBUG}
-{$IFNDEF FPC}
-  ReportMemoryLeaksOnShutdown := True;
-{$ENDIF}
-{$ENDIF}
-  RunDeskew;
+  result := UTF8Encode(WideString(str));
+end;
+
+procedure Run(const input : PChar ; const output:PChar); stdcall; export;
+begin
+  RunDeskew2(input,output);
+end;
+
+exports
+  Run;
+
+begin
 end.
+
+

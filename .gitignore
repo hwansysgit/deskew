@@ -1,6 +1,6 @@
 __history
-__recovery
 backup
+.hg
 
 _internal/*
 Dcu/*
@@ -9,7 +9,7 @@ Releases/*
 Bin/*
 Gui/lib/*
 Gui/deskewgui.app
-
+Win64/*
 deskew.cfg
 
 *.identcache

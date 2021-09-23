@@ -39,7 +39,6 @@ uses
 type
   { Default Imaging excepton class }
   EImagingError = class(Exception);
-
   { Raised when function receives bad image (not passed TestImage).}
   EImagingBadImage = class(Exception)
   public

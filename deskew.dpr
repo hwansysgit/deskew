@@ -8,13 +8,8 @@
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 }
-program deskew;
 
-{$APPTYPE CONSOLE}
-
-{$IFDEF FPC}
-  {$ERROR 'Use deskew.lpr as FPC/Lazarus project file'}
-{$ENDIF}
+library deskew;
 
 uses
   RotationDetector in 'RotationDetector.pas',
@@ -22,9 +17,19 @@ uses
   ImageUtils in 'ImageUtils.pas',
   MainUnit in 'MainUnit.pas';
 
+procedure Run(const input : PChar ; const output:PChar); stdcall; export;
 begin
-{$IFDEF DEBUG}
-  ReportMemoryLeaksOnShutdown := True;
-{$ENDIF}
-  RunDeskew;
+  try
+    RunDeskew2(input,output);
+  finally
+
+  end;
+
+end;
+
+exports
+  Run;
+
+begin
+
 end.

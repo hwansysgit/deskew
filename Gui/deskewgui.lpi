@@ -17,7 +17,7 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="97"/>
+      <MinorVersionNr Value="95"/>
       <StringTable CompanyName="Galfar's Lair" FileDescription="Deskew GUI" ProductName="Deskew GUI"/>
     </VersionInfo>
     <BuildModes Count="4">
@@ -27,7 +27,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="..\Bin\deskewgui"/>
+            <Filename Value="../Bin/deskewgui"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -66,7 +66,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="..\Bin\deskewgui-mac"/>
+            <Filename Value="../Bin/deskewgui"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -89,7 +89,6 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
-              <DebugInfoType Value="dsDwarf2Set"/>
             </Debugging>
             <LinkSmart Value="True"/>
             <Options>
@@ -105,7 +104,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="..\Bin\deskewgui32"/>
+            <Filename Value="../Bin/deskewgui32"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -138,10 +137,11 @@
           </Linking>
         </CompilerOptions>
       </Item4>
-      <SharedMatrixOptions Count="3">
+      <SharedMatrixOptions Count="4">
         <Item1 ID="734952752827" Modes="Release-macOS" Type="IDEMacro" MacroName="LCLWidgetType" Value="cocoa"/>
-        <Item2 ID="382385632331" Modes="Release-macOS" Value="-WM10.11"/>
+        <Item2 ID="382385632331" Modes="Release-macOS" Value="-WM10.9"/>
         <Item3 ID="590039250505" Modes="Debug" Value="-dDEBUG"/>
+        <Item4 ID="453512566522" Modes="Debug,Release,Release-macOS,Release-Win32" Value="-dDONT_LINK_FILE_FORMATS"/>
       </SharedMatrixOptions>
     </BuildModes>
     <PublishOptions>
@@ -221,7 +221,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\Bin\deskewgui"/>
+      <Filename Value="../Bin/deskewgui"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
@@ -246,6 +246,7 @@
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2Set"/>
+        <UseHeaptrc Value="True"/>
         <TrashVariables Value="True"/>
         <UseExternalDbgSyms Value="True"/>
       </Debugging>

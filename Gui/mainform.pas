@@ -15,7 +15,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms,
   Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ComCtrls, ActnList, Buttons,
+  ComCtrls, ActnList,
   // App units
   Runner, Options;
 
@@ -33,15 +33,14 @@ type
     ActShowAdvOptions: TAction;
     ActionList: TActionList;
     ApplicationProperties: TApplicationProperties;
-    BitBtn1: TBitBtn;
-    BtnAddFiles: TBitBtn;
-    BtnAdvOptions: TBitBtn;
-    BtnClear: TBitBtn;
-    BtnDeskew: TBitBtn;
+    BtnAddFiles: TButton;
+    BtnDeskew: TButton;
+    BtnClear: TButton;
+    BtnFinish: TButton;
     BtnBrowseOutputDir: TButton;
+    BtnAdvOptions: TButton;
     BtnAbout: TButton;
-    BtnFinish: TBitBtn;
-    CheckCropToInput: TCheckBox;
+    CheckAutoCrop: TCheckBox;
     CheckDefaultOutputFileOptions: TCheckBox;
     ColorBtnBackground: TColorButton;
     ComboFileFormat: TComboBox;
@@ -97,27 +96,17 @@ implementation
 {$R *.lfm}
 
 uses
-  ImagingUtility, DataModule, AdvOptionsForm, AboutForm, Config, Utils;
+  ImagingUtility, Imaging, DataModule, AdvOptionsForm, AboutForm, Config;
 
 { TFormMain }
 
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
-{$IF Defined(MSWINDOWS)}
-  Color := clWhite;
-  // Is there a dependable monospaced font for Linux?
-  // macOS has Courier New but changing the font from default messes up colors in dark mode.
-  MemoOutput.Font.Name := 'Courier New';
-{$ENDIF}
-
   FRunner := TRunner.Create(MemoOutput);
   FRunner.OnFinished := RunnerFinished;
   FRunner.OnProgress := RunnerProgress;
 
   Caption := Application.Title + ' v' + Module.VersionString;
-
-  MemoFiles.Clear;
-  MemoOutput.Clear;
 
   ComboFileFormat.Items.Clear;
   ComboFileFormat.Items.AddObject('Same as input', TObject(ffSameAsInput));
@@ -160,7 +149,7 @@ begin
   EdDirOutput.SelStart := Length(EdDirOutput.Text);
   ComboFileFormat.ItemIndex := Integer(AOptions.OutputFileFormat);
   ColorBtnBackground.ButtonColor := RGBToColor(GetRedValue(AOptions.BackgroundColor), GetGreenValue(AOptions.BackgroundColor), GetBlueValue(AOptions.BackgroundColor));
-  CheckCropToInput.Checked := AOptions.CropToInput;
+  CheckAutoCrop.Checked := AOptions.AutoCrop;
 end;
 
 procedure TFormMain.GatherOptions(AOptions: TOptions);
@@ -182,7 +171,7 @@ begin
   AOptions.OutputFileFormat := TFileFormat(PtrUInt(ComboFileFormat.Items.Objects[ComboFileFormat.ItemIndex]));
   LazColor := ColorBtnBackground.ButtonColor;
   AOptions.BackgroundColor := Color32(255, Red(LazColor), Green(LazColor), Blue(LazColor)).Color;
-  AOptions.CropToInput := CheckCropToInput.Checked;
+  AOptions.AutoCrop := CheckAutoCrop.Checked;
 end;
 
 procedure TFormMain.RunnerFinished(Sender: TObject; Reason: TFinishReason);
@@ -235,6 +224,7 @@ end;
 procedure TFormMain.ActDeskewExecute(Sender: TObject);
 begin
   GatherOptions(Module.Options);
+  FormAdvOptions.GatherOptions(Module.Options);
 
   ActFinish.Caption := 'Stop';
   MemoOutput.Clear;

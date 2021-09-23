@@ -25,7 +25,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="Bin\deskew"/>
+            <Filename Value="D:\AnyFileToPng\Demo\bin\x64\Debug\deskew"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="Imaging;$(ProjOutDir)"/>
@@ -52,6 +52,9 @@
             <Debugging>
               <UseHeaptrc Value="True"/>
             </Debugging>
+            <Options>
+              <ExecutableType Value="Library"/>
+            </Options>
           </Linking>
           <Other>
             <Verbosity>

@@ -160,7 +160,7 @@ var
   SrcWidth, SrcHeight: Integer;
   SrcWidthHalf, SrcHeightHalf, DstWidthHalf, DstHeightHalf: Single;
   DstWidth, DstHeight: Integer;
-  AngleRad, ForwardSin, ForwardCos, BackwardSin, BackwardCos, SrcX, SrcY: Single;
+  AngleRad, ForwardSin, ForwardCos, BackwardSin, BackwardCos, SrcX, SrcY, D: Single;
   TopLeft, TopRight, BottomLeft, BottomRight: TFloatPoint;
   SrcImage, DstImage: TImageData;
   FormatInfo: TImageFormatInfo;
@@ -512,6 +512,15 @@ var
     SrcY := SrcHeightHalf - SrcCoordY;
   end;
 
+  function CropToSource(const Pt: TFloatPoint): Single;
+  var
+    X, Y: Single;
+  begin
+    X := Abs(Pt.X / SrcWidthHalf);
+    Y := Abs(Pt.Y / SrcHeightHalf);
+    Result := MaxFloat(X, Y);
+  end;
+
 begin
   Assert(Image.Format in SupportedRotationFormats);
   GetImageFormatInfo(Image.Format, FormatInfo);
@@ -557,10 +566,10 @@ begin
   end
   else
   begin
-    // Keep the size of input (effectively cropping part of the "voids" added by
-    // framing the rotated image)
-    DstWidth := SrcWidth;
-    DstHeight := SrcHeight;
+    // Crop to largest proportional rect inside the rotated rect
+    D := Max4(CropToSource(TopLeft), CropToSource(TopRight), CropToSource(BottomLeft), CropToSource(BottomRight));
+    DstWidth := Ceil(SrcWidth / D);
+    DstHeight := Ceil(SrcHeight / D);
   end;
 
   DstWidthHalf := (DstWidth - 1) / 2;
